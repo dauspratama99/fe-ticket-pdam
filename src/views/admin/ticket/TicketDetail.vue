@@ -1,28 +1,25 @@
 <script setup>
-// TODO: Import necessary dependencies
-// Hint: You'll need to import from vue, pinia, lodash, feather-icons, luxon, and vue-router
 
-// TODO: Initialize ticket store and get necessary refs
-// Hint: Use useTicketStore() and storeToRefs()
+import { onMounted, ref} from 'vue';
+import { useTicketStore } from '@/stores/ticket';
+import { storeToRefs } from 'pinia';
+import { capitalize } from 'lodash';
+import feather from 'feather-icons';
+import { DateTime } from 'luxon';
+import { useRoute } from 'vue-router';
 
-// TODO: Create route instance
-// Hint: Use useRoute()
+const route = useRoute()
 
-// TODO: Create refs for ticket and form
-// Hint: You'll need ticket object and form with status and content fields
 const ticket = ref({})
 const form = ref({
     status: '',
     content: '',
 })
 
-// TODO: Get store methods and refs
-// Hint: Destructure success, error, loading from storeToRefs
-// Hint: Destructure fetchTicket and createTicketReply methods
+const ticketStore = useTicketStore()
+const { success, error, loading } = storeToRefs(ticketStore)
+const { fetchTicket, createTicketReply } = ticketStore
 
-// TODO: Implement fetchTicketDetail function
-// Hint: This should fetch ticket details using code from route params
-// Then update ticket and form status
 const fetchTicketDetail = async () => {
     const response = await fetchTicket(route.params.code)
 
@@ -30,17 +27,12 @@ const fetchTicketDetail = async () => {
     form.value.status = response.status
 }
 
-// TODO: Implement handleSubmit function
-// Hint: This should call createTicketReply with code and form
-// Then refetch ticket details
 const handleSubmit = async () => {
     await createTicketReply(route.params.code, form.value)
 
     await fetchTicketDetail()
 }
 
-// TODO: Implement onMounted hook
-// Hint: Fetch initial ticket details and initialize feather icons
 onMounted(async () => {
     await fetchTicketDetail()
 
@@ -59,7 +51,7 @@ onMounted(async () => {
                         <div class="mt-4 flex items-center space-x-4">
                             <span class="px-3 py-1 text-sm  rounded-lg" :class="{
                                 'text-blue-700 bg-blue-100': ticket.status === 'open',
-                                'text-yellow-700 bg-yellow-100': ticket.status === 'in_progress',
+                                'text-yellow-700 bg-yellow-100': ticket.status === 'onprogress',
                                 'text-green-700 bg-green-100': ticket.status === 'resolved',
                                 'text-red-700 bg-red-100': ticket.status === 'rejected'
                             }">
@@ -129,15 +121,21 @@ onMounted(async () => {
                             <select v-model="form.status"
                                 class="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
                                 <option value="open" class="text-blue-700">Open</option>
-                                <option value="in_progress" class="text-yellow-700">On Progress</option>
+                                <option value="onprogress" class="text-yellow-700">On Progress</option>
                                 <option value="resolved" class="text-green-700">Resolved</option>
                                 <option value="rejected" class="text-red-700">Rejected</option>
                             </select>
                         </div>
                     </div>
-                    <textarea v-model="form.content"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        rows="4" placeholder="Tulis jawaban Anda di sini..."></textarea>
+                    <div>
+                        <textarea v-model="form.content"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            :class="{ 'border-red-500 ring-red-500': error?.content }"
+                            rows="4" placeholder="Tulis jawaban Anda di sini..."></textarea>
+                            <p class="mt-1 text-xs text-red-500" v-if="error?.content">
+                                {{ error?.content?.join(', ') }}
+                            </p>
+                    </div>
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-4">
                             <button type="button"
@@ -149,7 +147,12 @@ onMounted(async () => {
                         <button type="submit"
                             class="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
                             <i data-feather="send" class="w-4 h-4 inline-block mr-2"></i>
-                            Kirim Jawaban
+                            <span v-if="!loading">
+                                Kirim Jawaban
+                            </span>
+                            <span v-else>
+                                Loading...
+                            </span>
                         </button>
                     </div>
                 </form>

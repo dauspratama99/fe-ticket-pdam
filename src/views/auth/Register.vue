@@ -1,21 +1,26 @@
 <script setup>
-// TODO: Import necessary dependencies
-// Hint: You'll need to import from vue, pinia, and your auth store
 
-// TODO: Initialize auth store and get necessary refs
-// Hint: Use useAuthStore() and storeToRefs()
+import { useAuthStore } from '@/stores/auth';
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+
+const authStore = useAuthStore()
+const { loading, error } = storeToRefs(authStore);
+const { register } = authStore
 
 // TODO: Create form ref with registration fields
 // Hint: You'll need name, email, password
 const form = ref({
-    // Your form fields here
+    name: null,
+    email: null,
+    password: null
 })
 
 // TODO: Implement handleSubmit function
 // Hint: This should call the register function from auth store
 // and handle any errors
 const handleSubmit = async () => {
-    // Your code here
+    await register(form.value)
 }
 
 // TODO: Implement togglePassword function
@@ -40,7 +45,7 @@ const toggleConfirmPassword = () => {
                 <!-- TODO: Add v-model binding for name -->
                 <input type="text" id="name" name="name" required
                     class="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    placeholder="John Doe">
+                    placeholder="...">
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <i data-feather="user" class="w-4 h-4 text-gray-400"></i>
                 </div>
@@ -52,12 +57,15 @@ const toggleConfirmPassword = () => {
             <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
             <div class="mt-1 relative">
                 <!-- TODO: Add v-model binding for email -->
-                <input type="email" id="email" name="email" required
+                <input v-model="form.email" type="email" id="email" name="email"
                     class="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    placeholder="nama@perusahaan.com">
+                    placeholder="@gmail.com"  :class="{ 'border-red-500 ring-red-500': error?.email }">
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <i data-feather="mail" class="w-4 h-4 text-gray-400"></i>
                 </div>
+                <p class="mt-1 text-xs text-red-500" v-if="error?.email">
+                    {{ error?.email?.join(', ') }}
+                </p>
             </div>
         </div>
 
@@ -66,15 +74,18 @@ const toggleConfirmPassword = () => {
             <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
             <div class="mt-1 relative">
                 <!-- TODO: Add v-model binding for password -->
-                <input type="password" id="password" name="password" required
+                <input v-model="form.password" type="password" id="password" name="password" 
                     class="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    placeholder="••••••••">
+                    placeholder="••••••••" :class="{ 'border-red-500 ring-red-500': error?.password }">
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
                     <!-- TODO: Add click handler for password toggle -->
                     <button type="button" class="text-gray-400 hover:text-gray-600 focus:outline-none">
                         <i data-feather="eye" class="w-4 h-4" id="password-toggle"></i>
                     </button>
                 </div>
+                <p class="mt-1 text-xs text-red-500" v-if="error?.[password]">
+                    {{ error?.[password]?.join(', ') }}
+                </p>
             </div>
         </div>
 
