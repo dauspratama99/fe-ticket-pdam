@@ -1,6 +1,4 @@
 <script setup>
-
-
 import { onMounted, ref, watch } from 'vue';
 import { useTicketStore } from '@/stores/ticket';
 import { storeToRefs } from 'pinia';
@@ -28,6 +26,7 @@ onMounted(async () => {
 </script>
 
 <template>
+    
     <div class="mb-6">
         <RouterLink :to="{ name: 'app.dashboard' }"
             class="inline-flex items-center text-sm text-gray-600 hover:text-gray-800">
